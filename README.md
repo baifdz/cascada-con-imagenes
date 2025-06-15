@@ -28,20 +28,19 @@ Proyecto/
 
 1. Inicializa el proyecto (si aún no lo has hecho):
 
-   ```bash
-   npm init -y
+```npm init -y```
 
-Instala las dependencias necesarias:
+2. Instala las dependencias necesarias:
 
-  '''
-  npm install express
+   
+  ```npm install express```
 
-Ejecuta el servidor:
-node server.js
+3. Ejecuta el servidor:
+```node server.js```
 
-Abre tu navegador y visita:
+4. Abre tu navegador y visita:
 
-http://localhost:3000
+```http://localhost:3000```
 
 # Notas
 Las imágenes deben estar dentro de la carpeta public/imagenes/ para que puedan mostrarse correctamente en el navegador.
