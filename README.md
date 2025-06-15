@@ -1,18 +1,51 @@
-# cascada-con-imagenes
+# Cascada con Imágenes
 
-el formato de la estructura del proyecto es la siguiente:
+Este proyecto es una aplicación simple construida con **Node.js** y **Express** que sirve un archivo HTML estático con imágenes desde una carpeta pública.
 
-Proyecto(Carpeta base)
-╠═server.js
-╠══public(Carpeta secundaria)
-╠═══index.html
-╠═══imagenes(Carpeta de imagenes)
-╚════Imagenes en formato .png y .jpg
+---
 
-para correr el codigo necesitas npm instalado
+## 📁 Estructura del Proyecto
 
-´´´npm init -y´´´
+Proyecto/
+├ server.js
+└─ public/
+├── index.html
+└── imagenes/
+├─── imagen1.jpg
+├─── imagen2.png
+└─── ...otros archivos de imagen
 
-´´´npm install express´´´
 
-´´´node server.js´´´
+---
+
+## 🚀 Cómo ejecutar el proyecto
+
+### Requisitos
+
+- Tener [Node.js](https://nodejs.org/) y `npm` instalados en tu sistema.
+
+### Pasos para iniciar
+
+1. Inicializa el proyecto (si aún no lo has hecho):
+
+   ```bash
+   npm init -y
+
+Instala las dependencias necesarias:
+
+  '''
+  npm install express
+
+Ejecuta el servidor:
+node server.js
+
+Abre tu navegador y visita:
+
+http://localhost:3000
+
+# Notas
+Las imágenes deben estar dentro de la carpeta public/imagenes/ para que puedan mostrarse correctamente en el navegador.
+
+Puedes editar index.html para modificar el contenido visualizado.
+
+
