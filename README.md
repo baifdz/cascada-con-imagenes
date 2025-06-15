@@ -8,11 +8,17 @@ Este proyecto es una aplicación simple construida con **Node.js** y **Express**
 
 Proyecto/
 ├ server.js
+
 └─ public/
+
 ├── index.html
+
 └── imagenes/
+
 ├─── imagen1.jpg
+
 ├─── imagen2.png
+
 └─── ...otros archivos de imagen
 
 
