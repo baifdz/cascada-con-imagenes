@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Cascada con texto, imágenes y explosión</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: black;
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #controls {
+      padding: 10px;
+      background: #111;
+      color: white;
+      font-family: monospace;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    button {
+      padding: 6px 12px;
+      font-size: 16px;
+      cursor: pointer;
+      background: #222;
+      border: 1px solid #555;
+      color: white;
+      border-radius: 4px;
+    }
+
+    button:hover {
+      background: #333;
+    }
+
+    canvas {
+      display: block;
+      position: fixed;
+      top: 40px;
+      left: 0;
+    }
+
+    #imageCanvas {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="controls">
+    <button id="toggleColorBtn">Modo: Multicolor</button>
+    <button id="toggleViewBtn">Ver: Imágenes</button>
+    <span id="statusText">La cascada de texto está en modo MULTICOLOR</span>
+  </div>
+
+  <canvas id="textCanvas"></canvas>
+  <canvas id="imageCanvas"></canvas>
+
+  <script>
+    const palabrasExplosion = ["HOLA", "ADIOS", "COMO ESTÁS", "QUE"];
+    let palabraIndex = 0;
+
+    const palabrasCascada = ["HOLA", "CUANDO", "DONDE", "COMO", "QUIEN", "PORQUE"];
+    let palabrasPorColumna = [];
+
+    const textCanvas = document.getElementById('textCanvas');
+    const ctxText = textCanvas.getContext('2d');
+    const fontSize = 40;
+    let columnsText;
+    let dropsText;
+    let colorsText = [];
+
+    const imageCanvas = document.getElementById('imageCanvas');
+    const ctxImage = imageCanvas.getContext('2d');
+    const imageSize = 150;
+    let columnsImage;
+    let dropsImage;
+    let images = [];
+
+    const particles = [];
+
+    let colorExplosionActual = 'rgb(255, 255, 0)';
+    let cascadaTextoMulticolor = true;
+
+    const toggleColorBtn = document.getElementById('toggleColorBtn');
+    const toggleViewBtn = document.getElementById('toggleViewBtn');
+    const statusText = document.getElementById('statusText');
+
+    const coloresFijos = ['rgb(0, 255, 0)', 'rgb(255, 0, 0)', 'rgb(128, 0, 128)', 'rgb(0, 255, 255)'];
+    let currentFixedColorIndex = 0;
+    let colorFijoTexto = coloresFijos[currentFixedColorIndex];
+
+    function getRandomColor() {
+      const r = Math.floor(Math.random() * 205 + 50);
+      const g = Math.floor(Math.random() * 205 + 50);
+      const b = Math.floor(Math.random() * 205 + 50);
+      return `rgb(${r},${g},${b})`;
+    }
+
+    function resize() {
+      textCanvas.width = window.innerWidth;
+      textCanvas.height = window.innerHeight;
+      imageCanvas.width = window.innerWidth;
+      imageCanvas.height = window.innerHeight;
+
+      columnsText = Math.floor(textCanvas.width / fontSize);
+      dropsText = new Array(columnsText).fill(1);
+
+      colorsText = [];
+      palabrasPorColumna = [];
+
+      for (let i = 0; i < columnsText; i++) {
+        colorsText.push(getRandomColor());
+        palabrasPorColumna.push(palabrasCascada[Math.floor(Math.random() * palabrasCascada.length)]);
+      }
+
+      currentFixedColorIndex = (currentFixedColorIndex + 1) % coloresFijos.length;
+      colorFijoTexto = coloresFijos[currentFixedColorIndex];
+
+      columnsImage = Math.floor(imageCanvas.width / imageSize);
+      dropsImage = new Array(columnsImage).fill(1);
+    }
+
+    resize();
+    window.addEventListener('resize', resize);
+
+    function drawTextCascade() {
+      ctxText.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctxText.fillRect(0, 0, textCanvas.width, textCanvas.height);
+
+      ctxText.font = fontSize + 'px monospace';
+
+      for (let i = 0; i < columnsText; i++) {
+        const x = i * fontSize;
+        const y = dropsText[i] * fontSize;
+
+        ctxText.fillStyle = cascadaTextoMulticolor ? colorsText[i] : colorFijoTexto;
+        ctxText.fillText(palabrasPorColumna[i], x, y);
+
+        dropsText[i] += 1;
+
+        if (y > textCanvas.height && Math.random() > 0.975) {
+          dropsText[i] = 0;
+
+          if (cascadaTextoMulticolor) {
+            colorsText[i] = getRandomColor();
+            palabrasPorColumna[i] = palabrasCascada[Math.floor(Math.random() * palabrasCascada.length)];
+          }
+        }
+      }
+    }
+
+    function drawImageCascade() {
+      ctxImage.fillStyle = 'rgba(0, 0, 0, 0.05)';
+      ctxImage.fillRect(0, 0, imageCanvas.width, imageCanvas.height);
+
+      for (let i = 0; i < columnsImage; i++) {
+        const x = i * imageSize;
+        const y = dropsImage[i] * imageSize;
+
+        const img = images[Math.floor(Math.random() * images.length)];
+        ctxImage.drawImage(img, x, y, imageSize, imageSize);
+
+        dropsImage[i] += 1;
+
+        if (y > imageCanvas.height && Math.random() > 0.975) {
+          dropsImage[i] = 0;
+        }
+      }
+    }
+
+    function drawParticles() {
+      const ctx = usingImages ? ctxImage : ctxText;
+
+      particles.forEach((p, i) => {
+        const colorConOpacidad = colorExplosionActual.replace("rgb", "rgba").replace(")", `, ${p.opacity.toFixed(2)})`);
+        ctx.fillStyle = colorConOpacidad;
+        ctx.font = `${p.size}px monospace`;
+        ctx.fillText(p.texto, p.x, p.y);
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.opacity -= 0.01;
+        if (p.size < p.sizeEnd) {
+          p.size += 0.5;
+        }
+
+        if (p.opacity <= 0) particles.splice(i, 1);
+      });
+    }
+
+    let usingImages = false;
+    let imagesAvailable = false;
+
+    function animate() {
+      if (usingImages) {
+        drawImageCascade();
+        ctxText.clearRect(0, 0, textCanvas.width, textCanvas.height);
+      } else {
+        drawTextCascade();
+        ctxImage.clearRect(0, 0, imageCanvas.width, imageCanvas.height);
+      }
+
+      drawParticles();
+    }
+
+    setInterval(animate, 50);
+
+    function loadImagesAndStart() {
+      fetch('/api/imagenes')
+        .then(res => res.json())
+        .then(paths => {
+          const promesas = paths.map(src => new Promise((resolve) => {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => resolve(img);
+            img.onerror = () => resolve(null);
+          }));
+
+          Promise.all(promesas).then(loadedImages => {
+            images = loadedImages.filter(i => i !== null);
+            imagesAvailable = images.length > 0;
+
+            // Mostrar imágenes solo si hay disponibles al inicio
+            usingImages = imagesAvailable;
+            textCanvas.style.display = usingImages ? "none" : "block";
+            imageCanvas.style.display = usingImages ? "block" : "none";
+            toggleViewBtn.textContent = usingImages ? "Ver: Texto" : "Ver: Imágenes";
+          });
+        })
+        .catch(() => {
+          usingImages = false;
+          imagesAvailable = false;
+          textCanvas.style.display = "block";
+          imageCanvas.style.display = "none";
+        });
+    }
+
+    loadImagesAndStart();
+
+    toggleColorBtn.addEventListener('click', () => {
+      cascadaTextoMulticolor = !cascadaTextoMulticolor;
+if (cascadaTextoMulticolor) {
+toggleColorBtn.textContent = 'Modo: Multicolor';
+statusText.textContent = 'La cascada de texto está en modo MULTICOLOR';
+} else {
+toggleColorBtn.textContent = 'Modo: Color fijo';
+statusText.textContent = 'La cascada de texto está en modo COLOR FIJO';
+    // Cambiar color fijo al cambiar modo
+    currentFixedColorIndex = (currentFixedColorIndex + 1) % coloresFijos.length;
+    colorFijoTexto = coloresFijos[currentFixedColorIndex];
+  }
+});
+
+toggleViewBtn.addEventListener('click', () => {
+  if (!imagesAvailable) {
+    // Si no hay imágenes, no se puede cambiar a ellas
+    alert("No hay imágenes disponibles para mostrar.");
+    return;
+  }
+
+  usingImages = !usingImages;
+
+  if (usingImages) {
+    textCanvas.style.display = "none";
+    imageCanvas.style.display = "block";
+    toggleViewBtn.textContent = "Ver: Texto";
+    statusText.textContent = "Mostrando cascada de IMÁGENES";
+  } else {
+    textCanvas.style.display = "block";
+    imageCanvas.style.display = "none";
+    toggleViewBtn.textContent = "Ver: Imágenes";
+    statusText.textContent = cascadaTextoMulticolor ? 
+      'La cascada de texto está en modo MULTICOLOR' : 
+      'La cascada de texto está en modo COLOR FIJO';
+  }
+});
+
+window.addEventListener('click', (e) => {
+  const canvasUsed = usingImages ? imageCanvas : textCanvas;
+  const rect = canvasUsed.getBoundingClientRect();
+
+  const originX = e.clientX - rect.left;
+  const originY = e.clientY - rect.top;
+
+  const textoActual = palabrasExplosion[palabraIndex];
+  palabraIndex = (palabraIndex + 1) % palabrasExplosion.length;
+
+  colorExplosionActual = getRandomColor();
+
+  const sizeStart = Math.random() * 15 + 5;
+  const sizeEnd = sizeStart + Math.random() * 30 + 10;
+
+  for (let i = 0; i < 25; i++) {
+    const angle = Math.random() * 2 * Math.PI;
+    const speed = Math.random() * 2 + 1;
+
+    particles.push({
+      x: originX,
+      y: originY,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      size: sizeStart,
+      sizeEnd: sizeEnd,
+      opacity: 1,
+      texto: textoActual
+    });
+  }
+});
+
+animate();
+</script> </body> </html> 
